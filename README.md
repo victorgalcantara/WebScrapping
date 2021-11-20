@@ -4,7 +4,7 @@ Raspagem de dados da web com o pacote "rvers" no R, um dos pacotes que compõem 
 
 Estes scripts são aplicações do curso de web scrapping oferecido na UFMG pelos professores Denisson Silva e Rogério Jerônimo Barbosa ([disponível aqui](https://github.com/antrologos/mq_2018_WebScraping)).
 
-# 00 Tabelas em uma página web - ALESP
+# 01 Tabelas em uma página web - ALESP
 
 O primeiro código trata-se do estudo de raspagem dados em tabelas numa página web. Neste caso utilizamos as seguintes funções e lógicas de programação:
 
@@ -14,7 +14,7 @@ html_table(pagina, header = TRUE, fill = TRUE) : lê tabelas numa página html.
 "header = TRUE": serve para indicarmos ao nosso "extrator de tabelas HTML" que a primeira linha da tabela deve ser considerada cabeçalho (nome das colunas)
 "fill = TRUE"diz para que o R preencha (com espaços vazios) partes da tabela que podem estar incompletas (como, por exemplo, linhas com números desiguais de colunas etc.)
 
-# 01 Arquivos guardados em uma página (localização, download e armazenamento em disco) - artigos da revista acadêmica Estudos em Avaliação
+# 03 Arquivos guardados em uma página (localização, download e armazenamento em disco) - artigos da revista acadêmica Estudos em Avaliação
 
 html_nodes(pagina, xpath = "//caminho_XML") : lê tags especificadas pelo caminho XML de uma página HTML
 
