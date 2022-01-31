@@ -1,0 +1,121 @@
+---
+title: "Cadernos de Pesquisa - FCC"
+author: "Victor G Alcantara"
+date: "31/01/2022"
+output: html_document
+---
+
+# Title: raspagem de dados da internet - tabelas
+# Author: Victor Gabriel Alcantara
+# Date: 20.11.2021
+
+In this script we will scrapp articles from Caderno de Pesquisa, a journal of Fundação Carlos Chagas.
+
+```{r}
+# 0. Packages and setup -----------------------------------------------------
+
+library(tidyverse)
+library(rvest)    
+
+wd <- "C:/Users/VictorGabriel/Documents/00_dados/REV_CAD_PESQ"
+setwd(wd)
+```
+
+The first step is get informations about all issues.
+
+In this case, we have 180 issues tidy in 4 pages.
+
+```{r}
+links <- NULL
+ed <- NULL
+
+
+for(i in 1:4){
+# URL de cada página
+url <-  paste0("http://publicacoes.fcc.org.br/index.php/cp/issue/archive/",i)
+
+pagina <- read_html(url)
+
+# navegando no documento: extraindo as tags "a" com class='cover'
+tag_a_edicoes   <- html_nodes(pagina, xpath = "//a[@class='title']")
+tag_div_edicoes <- html_nodes(pagina, xpath = "//div[@class='series']")
+
+# extraindo das tags selecionadas os links no atributo "href"
+links_edicoes <- html_attr(tag_a_edicoes, name = "href")
+
+# textos com descr das edicoes
+text_edicoes  <- html_text(tag_a_edicoes, trim = T)  %>% str_replace_all(.,c("/"),"")
+
+if(i == 1){
+text_edicoes2 <- html_text(tag_div_edicoes,trim = T) %>% str_replace_all(.,c("/"),"")
+text_edicoes[3:33] <- paste(text_edicoes2,text_edicoes[3:33])
+}
+
+# Guardando infos em cada página
+ed    <- c(ed,text_edicoes)
+links <- c(links,links_edicoes)
+}
+
+```
+
+Now, with links and description of all issues, the next step is scrapp articles.
+
+```{r}
+for(i in 2:10){ 
+  
+  # Edicoes da revista I -------
+  
+  # lendo o doc html da revista edicao x
+  ed_i <- read_html(links[i])
+  
+  # navegando no documento: extraindo as tags "a" com class='cover'
+  tag_a_ed_i  <- html_nodes(ed_i, xpath = "//h3[@class='title']/a")
+  
+  # extraindo das tags selecionadas os links no atributo "href"
+  links_artigos <- html_attr(tag_a_ed_i, name = "href")
+  
+  titulos       <- html_text(tag_a_ed_i,trim = T) # extrai o texto na tag, no caso o título do art
+  
+  # Guarda link dos artigos
+  link_artigo = NULL
+  
+  for(j in 1:length(links_artigos)) { # Artigos J --------------------
+    print(j)
+    # pag de descrição do art
+    page_descricao_artigo <- read_html(links_artigos[j])
+    
+    # localizando a tag <a> </a> com o link para a pag do artigo
+    tag_a_art  <- html_nodes(page_descricao_artigo, xpath = "//a[@class='obj_galley_link pdf']")
+    # link da pag do artigo
+    link_page_artigo <- html_attr(tag_a_art, name = "href")
+    
+    # pag do artigo
+    page_artigo <- read_html(link_page_artigo[1])
+    
+    # tag download
+    tag <- html_nodes(page_artigo, xpath = "//a[@class='download']")
+    # link do download
+    link_artigo[j] <- html_attr(tag[1], name = "href")
+  }
+  
+  dir.create(text_edicoes[i])
+  
+  artigos <- data.frame("id"=c(1:length(links_artigos)),"titulo"=titulos,"link-download"=link_artigo,
+                        "link-artigo"=links_artigos)
+  write.csv(artigos,paste0(text_edicoes[i],"/catalogo"),
+            row.names = F)
+  
+  for(j in 1:length(link_artigo)){
+    download.file(link_artigo[j], 
+                  paste0(text_edicoes[i],"/",j,".pdf"), # caminho do arquivo
+                  mode = "wb")}
+}
+```
+
+
+
+    
+    
+  # 2. Data management -------------------------------------------------------
+  
+  
